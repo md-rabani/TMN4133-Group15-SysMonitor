@@ -102,6 +102,65 @@ typedef struct {
 } Process;
 
 void listTopProcesses() {
+    DIR *dir = opendir("/proc");
+    if (!dir) {
+        perror("opendir /proc");
+        return;
+    }
+
+    struct dirent *entry;
+    Process proc[MAX_PROC];
+    int count = 0;
+
+    while ((entry = readdir(dir)) && count < MAX_PROC) {
+        if (isdigit(entry->d_name[0])) {
+            char statPath[300], commPath[300];
+            sprintf(statPath, "/proc/%s/stat", entry->d_name);
+            sprintf(commPath, "/proc/%s/comm", entry->d_name);
+
+            FILE *sf = fopen(statPath, "r");
+            FILE *cf = fopen(commPath, "r");
+            if (!sf || !cf) {
+                if (sf) fclose(sf);
+                if (cf) fclose(cf);
+                continue;
+            }
+
+            long utime, stime;
+            fscanf(sf,
+                   "%d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %ld %ld",
+                   &proc[count].pid, &utime, &stime);
+            fgets(proc[count].name, sizeof(proc[count].name), cf);
+            proc[count].name[strcspn(proc[count].name, "\n")] = 0;
+
+            proc[count].cpu_time = utime + stime;
+            count++;
+
+            fclose(sf);
+            fclose(cf);
+        }
+    }
+    closedir(dir);
+
+    for (int i = 0; i < count - 1; i++)
+        for (int j = i + 1; j < count; j++)
+            if (proc[j].cpu_time > proc[i].cpu_time) {
+                Process t = proc[i];
+                proc[i] = proc[j];
+                proc[j] = t;
+            }
+
+    printf("Top 5 Processes (CPU Time)\nPID\tCPU\tName\n");
+    char log[256] = "Top5 Processes: ";
+
+    for (int i = 0; i < 5 && i < count; i++) {
+        printf("%d\t%ld\t%s\n",
+               proc[i].pid, proc[i].cpu_time, proc[i].name);
+        char tmp[300];
+        sprintf(tmp, "%d(%s) ", proc[i].pid, proc[i].name);
+        strcat(log, tmp);
+    }
+    writeLog(log);
 }
 
 /* ---------------- Continuous Monitoring ---------------- */
