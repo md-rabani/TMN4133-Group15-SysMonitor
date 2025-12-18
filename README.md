@@ -5,8 +5,8 @@
 #  🛠️ Installation & Compilation
 
 ##  1. Clone the repository:
-### git clone https://github.com/your-username/your-repo-name.git
-### cd your-repo-name
+### git clone https://github.com/your-username/your-repo-name.git](https://github.com/md-rabani/TMN4133-Group15-SysMonitor.git
+### cd TMN4133-Group15-SysMonitor
 
 ##  2. Compile the source code:
 ### gcc sysmonitor.c -o sysmonitor
