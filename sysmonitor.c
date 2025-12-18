@@ -92,6 +92,31 @@ void getCPUUsage() {
 
 /* ---------------- Memory Usage ---------------- */
 void getMemoryUsage() {
+    FILE *f = fopen("/proc/meminfo", "r");
+    if (!f) {
+        perror("open /proc/meminfo");
+        return;
+    }
+
+    char line[256];
+    long total = 0, avail = 0;
+
+    while (fgets(line, sizeof(line), f)) {
+        sscanf(line, "MemTotal: %ld kB", &total);
+        sscanf(line, "MemAvailable: %ld kB", &avail);
+    }
+    fclose(f);
+
+    long used = total - avail;
+
+    printf("Memory Total : %ld MB\n", total / 1024);
+    printf("Memory Used  : %ld MB\n", used / 1024);
+    printf("Memory Free  : %ld MB\n", avail / 1024);
+
+    char log[128];
+    sprintf(log, "Memory Total:%ldMB Used:%ldMB Free:%ldMB",
+            total / 1024, used / 1024, avail / 1024);
+    writeLog(log);
 }
 
 /* ---------------- Process List ---------------- */
