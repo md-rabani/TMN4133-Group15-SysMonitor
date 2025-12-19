@@ -190,6 +190,13 @@ void listTopProcesses() {
 
 /* ---------------- Continuous Monitoring ---------------- */
 void continuousMonitor(int interval) {
+    while (1) {
+        system("clear");
+        getCPUUsage();
+        getMemoryUsage();
+        listTopProcesses();
+        sleep(interval);
+    }
 }
 
 /* ---------------- Main ---------------- */
